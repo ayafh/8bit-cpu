@@ -20,7 +20,7 @@ end entity ;
 ---------------------
 architecture CUunit of controlunit is 
 ------ 
-signal controlword: std_logic_vector ( 37 downto 0) ; ---38 control sig--- 7
+signal controlword: std_logic_vector ( 37 downto 0) ; ---38 control sig--- 
 signal current_instruction: std_logic_vector ( 7 downto 0) ;
 signal next_cycle : boolean:=false ;
 signal t_state :integer range 0 to 7;
@@ -162,28 +162,169 @@ elsif (falling_edge (clk) and next_cycle= true) then
 				elsif(t_state=1)then controlword(30)<='1';controlword(24 downto 23)<="00";controlword(25)<='1';
 				elsif(t_state=2)then controlword(28)<='1';controlword(27 downto 26)<="00";controlword(31)<='1';
 				next_cycle<=true;end if;
+	--- *** alu operations ----- 
 				
-	when incacc=>if(t_state=0)then controlword(14 downto 11)<="0110";controlword(36)<='1';controlword(8 downto 7)<="10";
+	when addimediate =>if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				    elsif(t_state=1)then controlword(30)<='1';controlword(14 downto 11)<="0000";controlword(0 downto 0)<="1";controlword(36)<='1';controlword(31)<='1';controlword(32)<='1';controlword(8 downto 7)<="10";
+			     	next_cycle<=true;end if;
+	when addreg => if (t_state =0) then controlword(35)<= '1' ; controlword(4 downto 3)<= "10" ; --pc to mar 
+                   elsif (t_state =1) then controlword (30)<= '1' ; controlword(25)<='1' ; controlword(24 downto 23 ) <= "01" ; -- ram to ir
+                   elsif (t_state =2) then controlword (28)<= '1' ; controlword(27 downto 26 )<= "01" ; controlword(22) <='1' ; controlword(21 downto 19) <= CU_IN( 2 downto 0) ; 
+                   controlword (14 downto 11)<= "0000" ; controlword(0 downto 0) <= "0" ; controlword ( 8 downto 7) <= "10" ; controlword(36) <= '1' ; controlword(32)<= '1' ; controlword(31)<='1' ;      
+                   next_cycle <= true ; end if ; 
+	when adddirect => if(t_state=0)then controlword(35)<='1'; controlword(4 downto 3)<= "10";  -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(14 downto 11)<="0000";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true; end if;
+	when addindirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=3)then controlword(30)<='1';controlword(14 downto 11)<="0000";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if;
+	when subimediate =>if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				    elsif(t_state=1)then controlword(30)<='1';controlword(14 downto 11)<="0001";controlword(0 downto 0)<="1";controlword(36)<='1';controlword(31)<='1';controlword(32)<='1';controlword(8 downto 7)<="10";
 				next_cycle<=true;end if;
-	when decacc => if(t_state=0)then controlword(14 downto 11)<="0111";controlword(36)<='1';controlword(8 downto 7)<="10";
+	when subreg => if (t_state =0) then controlword(35)<= '1' ; controlword(4 downto 3)<= "10" ; --pc to mar 
+                   elsif (t_state =1) then controlword (30)<= '1' ; controlword(25)<='1' ; controlword(24 downto 23 ) <= "01" ; -- ram to ir
+                   elsif (t_state =2) then controlword (28)<= '1' ; controlword(27 downto 26 )<= "01" ; controlword(22) <='1' ; controlword(21 downto 19) <= CU_IN( 2 downto 0) ; 
+                   controlword (14 downto 11)<= "0001" ; controlword(0 downto 0) <= "0" ; controlword ( 8 downto 7) <= "10" ; controlword(36) <= '1' ; controlword(32)<= '1' ; controlword(31)<='1' ;      
+                   next_cycle <= true ; end if ; 
+	when subdirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(14 downto 11)<="0001";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if;
+	when subindirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=3)then controlword(30)<='1';controlword(14 downto 11)<="0001";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if;
+					 ----
+	when andi =>if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				    elsif(t_state=1)then controlword(30)<='1';controlword(14 downto 11)<="0010";controlword(0 downto 0)<="1";controlword(36)<='1';controlword(31)<='1';controlword(32)<='1';controlword(8 downto 7)<="10";
+				next_cycle<=true;end if;
+	when andreg => if (t_state =0) then controlword(35)<= '1' ; controlword(4 downto 3)<= "10" ; --pc to mar 
+                   elsif (t_state =1) then controlword (30)<= '1' ; controlword(25)<='1' ; controlword(24 downto 23 ) <= "01" ; -- ram to ir
+                   elsif (t_state =2) then controlword (28)<= '1' ; controlword(27 downto 26 )<= "01" ; controlword(22) <='1' ; controlword(21 downto 19) <= CU_IN( 2 downto 0) ; 
+                   controlword (14 downto 11)<= "0010" ; controlword(0 downto 0) <= "0" ; controlword ( 8 downto 7) <= "10" ; controlword(36) <= '1' ; controlword(32)<= '1' ; controlword(31)<='1' ;      
+                   next_cycle <= true ; end if ; 
+	when anddirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(14 downto 11)<="0010";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if;
+	when andindirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=3)then controlword(30)<='1';controlword(14 downto 11)<="0010";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if; 
+  ---------------------
+  when ori =>if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				    elsif(t_state=1)then controlword(30)<='1';controlword(14 downto 11)<="0011";controlword(0 downto 0)<="1";controlword(36)<='1';controlword(31)<='1';controlword(32)<='1';controlword(8 downto 7)<="10";
+				next_cycle<=true;end if;
+	when orreg => if (t_state =0) then controlword(35)<= '1' ; controlword(4 downto 3)<= "10" ; --pc to mar 
+                   elsif (t_state =1) then controlword (30)<= '1' ; controlword(25)<='1' ; controlword(24 downto 23 ) <= "01" ; -- ram to ir
+                   elsif (t_state =2) then controlword (28)<= '1' ; controlword(27 downto 26 )<= "01" ; controlword(22) <='1' ; controlword(21 downto 19) <= CU_IN( 2 downto 0) ; 
+                   controlword (14 downto 11)<= "0011" ; controlword(0 downto 0) <= "0" ; controlword ( 8 downto 7) <= "10" ; controlword(36) <= '1' ; controlword(32)<= '1' ; controlword(31)<='1' ;      
+                   next_cycle <= true ; end if ; 
+	when ordirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(14 downto 11)<="0011";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if;
+	when orindirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=3)then controlword(30)<='1';controlword(14 downto 11)<="0011";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if;
+					 ----------------------
+	when xori =>if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				    elsif(t_state=1)then controlword(30)<='1';controlword(14 downto 11)<="0100";controlword(0 downto 0)<="1";controlword(36)<='1';controlword(31)<='1';controlword(32)<='1';controlword(8 downto 7)<="10";
+				next_cycle<=true;end if;
+	when xorreg => if (t_state =0) then controlword(35)<= '1' ; controlword(4 downto 3)<= "10" ; --pc to mar 
+                   elsif (t_state =1) then controlword (30)<= '1' ; controlword(25)<='1' ; controlword(24 downto 23 ) <= "01" ; -- ram to ir
+                   elsif (t_state =2) then controlword (28)<= '1' ; controlword(27 downto 26 )<= "01" ; controlword(22) <='1' ; controlword(21 downto 19) <= CU_IN( 2 downto 0) ; 
+                   controlword (14 downto 11)<= "0100" ; controlword(0 downto 0) <= "0" ; controlword ( 8 downto 7) <= "10" ; controlword(36) <= '1' ; controlword(32)<= '1' ; controlword(31)<='1' ;      
+                   next_cycle <= true ; end if ; 
+	when xordirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(14 downto 11)<="0100";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if;
+	when xorindirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=3)then controlword(30)<='1';controlword(14 downto 11)<="0100";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if;
+					 ---------------- 
+	when nandi =>if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				    elsif(t_state=1)then controlword(30)<='1';controlword(14 downto 11)<="0101";controlword(0 downto 0)<="1";controlword(36)<='1';controlword(31)<='1';controlword(32)<='1';controlword(8 downto 7)<="10";
+				next_cycle<=true;end if;
+	when nandreg => if (t_state =0) then controlword(35)<= '1' ; controlword(4 downto 3)<= "10" ; --pc to mar 
+                   elsif (t_state =1) then controlword (30)<= '1' ; controlword(25)<='1' ; controlword(24 downto 23 ) <= "01" ; -- ram to ir
+                   elsif (t_state =2) then controlword (28)<= '1' ; controlword(27 downto 26 )<= "01" ; controlword(22) <='1' ; controlword(21 downto 19) <= CU_IN( 2 downto 0) ; 
+                   controlword (14 downto 11)<= "0101" ; controlword(0 downto 0) <= "0" ; controlword ( 8 downto 7) <= "10" ; controlword(36) <= '1' ; controlword(32)<= '1' ; controlword(31)<='1' ;      
+                   next_cycle <= true ; end if ; 
+	when nanddirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(14 downto 11)<="0101";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if;
+	when nandindirect => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				     elsif(t_state=1)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=2)then controlword(30)<='1';controlword(35)<='1';controlword(4 downto 3)<="11";
+					 elsif(t_state=3)then controlword(30)<='1';controlword(14 downto 11)<="0101";controlword(36)<='1';controlword(11 downto 10)<="11";controlword(32)<='1';controlword(31)<='1';controlword(0 downto 0)<="1";controlword(8 downto 7)<="11";
+					 next_cycle<=true;end if;
+					 --------				 
+	when incacc=> if(t_state=0)then controlword(14 downto 11)<="0110"; controlword(36)<='1';controlword(8 downto 7)<="10";controlword(32)<='1';
+				next_cycle<=true;end if;
+	when decacc => if(t_state=0)then controlword(14 downto 11)<="0111";controlword(36)<='1';controlword(8 downto 7)<="10";controlword(32)<='1';
 				next_cycle<=true;end if;
 	when incr => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
-				elsif (t_state=1) then controlword(30)<='1';controlword(25)<='1'; controlword(24 downto 23)<="01";  --ram to ir --
-				elsif (t_state =2) then controlword(28)<='1';controlword(27 downto 26)<="01";controlword(31)<='1'; -- ir to cu and pc in --
-				elsif (t_state =3) then controlword (22)<='1' ; controlword( 21 downto 19)<= CU_IN(2 downto 0) ; controlword(0 downto 0) <= "1" ; 
-				elsif (t_state =4) then controlword(14 downto 11)<="1000"; controlword (18) <= '1'; controlword(17 downto 15) <= CU_IN(2 downto 0);
-				 controlword(2 downto 1)<="10"; 
+				elsif (t_state=1) then controlword(30)<='1';controlword(25)<='1'; controlword(24 downto 23)<="01";controlword(31)<='1';  --ram to ir --
+				elsif (t_state =2) then controlword(18)<='1';controlword(17 downto 15)<=CU_IN(2 downto 0);controlword(22)<='1';controlword(21 downto 19)<=CU_IN(2 downto 0); 
+				controlword(14 downto 11)<="1000";controlword(0 downto 0)<="0";controlword(2 downto 1)<="10";controlword(28)<='1';controlword(27 downto 26)<="01";controlword(32)<='1';
 				next_cycle<=true;end if;
 	when decr => if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
-				elsif (t_state=1) then controlword(30)<='1';controlword(25)<='1'; controlword(24 downto 23)<="01";  --ram to ir --
-				elsif (t_state =2) then controlword(28)<='1';controlword(27 downto 26)<="01";controlword(31)<='1'; -- ir to cu and pc in --
-				elsif (t_state =3) then controlword (22)<='1' ; controlword( 21 downto 19)<= CU_IN(2 downto 0) ; controlword(0 downto 0) <= "1" ; 
-				elsif (t_state =4) then controlword(14 downto 11)<="1001"; controlword (18) <= '1'; controlword(17 downto 15) <= CU_IN(2 downto 0);
-				 controlword(2 downto 1)<="10"; 
+				elsif (t_state=1) then controlword(30)<='1';controlword(25)<='1'; controlword(24 downto 23)<="01";controlword(31)<='1';  --ram to ir --
+				elsif (t_state =2) then controlword(28)<='1';controlword(27 downto 26)<="01" ; controlword(18)<='1';controlword(17 downto 15)<=CU_IN(2 downto 0);controlword(22)<='1';controlword(21 downto 19)<=CU_IN(2 downto 0); 
+				controlword(14 downto 11)<="1001";controlword(0 downto 0)<="0";controlword(2 downto 1)<="10";controlword(32)<='1';
 				next_cycle<=true;end if;
-				 
-	
-	
+	when SLAACC => if(t_state=0)then controlword(14 downto 11)<="1011";controlword(36)<='1';controlword(8 downto 7)<="10";controlword(32)<='1'; next_cycle <= true ; end if ; 
+	when SRAACC => if(t_state=0)then controlword(14 downto 11)<="1010";controlword(36)<='1';controlword(8 downto 7)<="10";controlword(32)<='1'; next_cycle <= true ; end if ; 			 
+	----------------------- branch intructions ------------
+	When CALL =>  if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+				elsif (t_state=1) then controlword(30)<='1';controlword(25)<='1'; controlword(24 downto 23)<="01";controlword(31)<='1';  --ram to ir , inc pc -- 
+	            elsif (t_state =2) then controlword(34)<= '1' ; controlword(6 downto 5)<= "10" ; controlword(29)<='1';controlword(35)<='1';controlword(4 downto 3)<="00" ; controlword(4 downto 3) <= "00" ; -- pc to mbr sp to mar + wrram --				 
+			    elsif ( t_state =3) then controlword (28) <='1' ; controlword (27 downto 26 ) <= "01" ; controlword (37)<= '1' ; controlword (10) <='1'; controlword(9)<='0' ; controlword(33)<= '0';  -- iread =1 from 01 to pc and push=1 ( dec sp ) 
+	            next_cycle <= true ; end if ; 
+   When ret =>  if(t_state=0)then controlword (9)<= '1' ;controlword (10) <='0'; controlword(33)<= '0';
+                elsif (t_state=1) then  controlword (35)<='1' ; controlword (4 downto 3)<="00" ; 
+				elsif (t_state=3) then controlword(30)<='1';controlword(25)<='1'; controlword(24 downto 23)<="01"; --ram to ir 				 
+			    elsif ( t_state =2) then controlword (28) <='1' ; controlword (27 downto 26 ) <= "01" ; controlword (37)<= '1' ; -- irread =1 from 01 to pc  
+	            next_cycle <= true ; end if ; 
+    when jump=>if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; -- pc to mar --
+			elsif(t_state=1)then controlword(30)<='1';controlword(25)<='1'; controlword(24 downto 23)<="01";controlword(31)<='1';
+		    elsif(t_state=2)then controlword(28)<='1';controlword(27 downto 26)<="01";controlword(37)<='1';
+				next_cycle<=true;end if;
+	-----------------------------------  laading instructions ------ 
+	when loadimediate => if(t_state=0)then controlword(35)<='1'; controlword(4 downto 3)<="10";  -- pc to mar -- 
+	                     elsif( t_state = 1) then controlword (30)<= '1' ; controlword(25)<='1' ; controlword(24 downto 23)<="01" ; controlword(31)<= '1';
+	                     ELSIF(T_STATE =2) THEN controlword(35)<='1'; controlword(4 downto 3)<="10"; 
+	                     elsif( t_state =3) then controlword(28)<='1';controlword(27 downto 26)<="01";controlword(31)<= '1'; controlword(30) <='1' ; controlword(18)<= '1' ; controlword(17 downto 15) <= cu_in(2 downto 0) ; controlword(2 downto 1)<= "11" ;    
+	                     next_cycle <= true ; end if ;  
+--    when loaddirect => if(t_state=0)then controlword(35)<='1'; controlword(4 downto 3)<="10";  -- pc to mar -- 
+--	                     elsif( t_state = 1) then controlword (30)<= '1' ; controlword(25)<='1' ; controlword(24 downto 23)<="01" ; controlword(31)<= '1';
+--	                     ELSIF(T_STATE =2) THEN controlword(35)<='1'; controlword(4 downto 3)<="10"; 
+--	                     elsif ( t_state = 3) then controlword(28)<='1' ; controlword(27 downto 26)<="01" ; controlword(31)<= '1'; controlword(30) <='1' ; controlword(18)<= '1' ; controlword(17 downto 15) <= cu_in(2 downto 0) ; controlword(2 downto 1)<= "11"
+--	 
+
+
+    when loadreg =>if(t_state=0)then controlword(35)<='1';controlword(4 downto 3)<="10"; 
+	               elsif (t_state =1) then controlword (30)<='1' ; controlword (25)<= '1' ; controlword(24 downto 23) <= "01" ; controlword(31)<='1'; 
+	               elsif (t_state =2) then controlword (28)<='1' ; controlword(27 downto 26)<= "01" ; controlword(22)<= '1' ; controlword ( 21 downto 19)<= CU_IN(2 downto 0) ; controlword(18)<= '1' ;
+	              controlword(17 downto 15)<= CU_IN(6 downto 4) ;controlword(2 downto 1) <= "01"  ; next_cycle <= true ; end if ; 
+    -------------- storing instruction -------- 
+--    when strdirect => if ( t_state =0 ) then controlword(35)<='1'; controlword(4 downto 3)<= "10" ; 
+--	                  elsif ( t_state = 1) then controlword (30)<= '1' ; controlword(25)<='1' ; controlword ( 24 downto 23) <= "01" ; controlword(31)<= '1' ; 
+--	                  elsif ( t_state =2) then controlword(28)<='1' ; controlword(27 downto 26) <= "01" ; controlword(22)<='1' ; controlword(21 downto 19)<= CU_IN(2 downto 0);
+--	                  elsif (t_state =3) then controlword(35)<='1' ; controlword(4 downto 3) <= "10" ; 
+--	                  elsif (t_state =4) then controlword(30) <= '1' ; controlword(34)<='1' ; controlword( 6 downto 5) <= "10" ; controlword(35)<= '1' ; controlword(4 downto 3)<= "11"; controlword()<='1' ; controlword(31)<='1' ; next_cycle <= true ; end if ; 
 	when halt=> next_cycle<=true ;
 	when nop=> next_cycle<=true ;
 	when others=>null;
